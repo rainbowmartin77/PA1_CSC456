@@ -18,19 +18,29 @@ int main(int argc, char* argv[]) {
     }
 
     // character array to hold input
-    char input[50];
+    char *input = NULL;
+    size_t capacity = 0;
 
     do {
         // print prompt
         printf("daksh> ");
 
         // read input
-        fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = '\0';
+        ssize_t length = getline(&input, &capacity, stdin);
+
+        if (length < 0){
+            eMessage();
+        }
+
+        else {
+            input[length - 1] = '\0';
+        }
 
 
 
     } while (strcmp(input, "exit")!= 0);
+
+    free(input);
 
     return 0;
 }
