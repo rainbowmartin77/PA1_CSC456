@@ -21,8 +21,10 @@ char** breakString(char* inputString, int *count) {
 
     // while there is another word waiting
     while (word != NULL) {
+        int newCount = *count + 1;
+
         //reallocate memory for an additional word's pointer
-        char** temporary = realloc(words, (*count + 1) * sizeof(char*));
+        char** temporary = realloc(words, (newCount + 1) * sizeof(char*));
         
         // make the words array the newly allocated array
         words = temporary;
