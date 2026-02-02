@@ -13,13 +13,12 @@ int main(int argc, char* argv[]) {
 
     bool run = true;
 
-    int root;
+    // variables to store directories
+    char presentDirectory[60];
+    getcwd(presentDirectory, 60);
 
-    root = chdir("/home/dsu");
-
-    if (root != 0) {
-        eMessage();
-    }
+    char previousDirectory[60];
+    const char *home = "/home";
 
     // program invoked with more than 2 arguments
     // exit program after error message
@@ -70,8 +69,47 @@ int main(int argc, char* argv[]) {
 
             // cd command
             if (strcmp(words[0], "cd") == 0) {
-                chdir(words[1]);
+                char newDirectory[60];
+
+                int c = 0;
+                for(int i = 1; i < 3; i++){
+                    if (words[i] != NULL) {
+                        c++;
+                    }
+                }
+
+                if (c > 1) {
+                    eMessage();
+                }
+                else {
+                    if (words[1] != NULL && words[1] != "~") {
+                        strcpy(newDirectory, words[1]);
+                        printf("%s\n", newDirectory);
+                        int working = chdir(newDirectory);
+                        printf("%d\n", working);
+
+                        getcwd(presentDirectory, 60);
+                        printf("%s\n", presentDirectory);
+                    }
+                    else if (words[1] == NULL || words[1] == "~") {
+                        strcpy(newDirectory, "/home");
+                        chdir(newDirectory);
+                        getcwd(presentDirectory, 60);
+                        printf("%s\n", presentDirectory);
+                    }
+                }
+                
             }
+
+            if (strcmp(words[0], "pwd") == 0) {
+                getcwd(presentDirectory, 60);
+                printf("%s\n", presentDirectory);
+            }
+
+            for(int j = 0; j < 10; j++) {
+                words[j] = '\0';
+            }
+            
         }
 
     } while (run);
