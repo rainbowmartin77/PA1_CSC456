@@ -82,20 +82,21 @@ int main(int argc, char* argv[]) {
                     eMessage();
                 }
                 else {
-                    if (words[1] != NULL && words[1] != "~") {
+                    if (words[1] != NULL && strcmp(words[1],"~") != 0) {
                         strcpy(newDirectory, words[1]);
-                        printf("%s\n", newDirectory);
-                        int working = chdir(newDirectory);
-                        printf("%d\n", working);
 
+                        // make sure directory is valid
+                        int working = chdir(newDirectory);
+                        if( working != 0) {
+                            perror("chdir");
+                        }
+                        // store current directory
                         getcwd(presentDirectory, 60);
-                        printf("%s\n", presentDirectory);
                     }
                     else if (words[1] == NULL || words[1] == "~") {
                         strcpy(newDirectory, "/home");
                         chdir(newDirectory);
                         getcwd(presentDirectory, 60);
-                        printf("%s\n", presentDirectory);
                     }
                 }
                 
