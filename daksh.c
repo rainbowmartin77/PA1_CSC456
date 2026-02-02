@@ -78,11 +78,11 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                if (c > 1) {
+                if (c != 1) {
                     eMessage();
                 }
                 else {
-                    if (words[1] != NULL && strcmp(words[1],"~") != 0) {
+                    if (strcmp(words[1], "~") != 0) {
                         strcpy(newDirectory, words[1]);
 
                         // make sure directory is valid
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
                         // store current directory
                         getcwd(presentDirectory, 60);
                     }
-                    else if (words[1] == NULL || words[1] == "~") {
+                    else if (strcmp(words[1], "~") == 0) {
                         strcpy(newDirectory, "/home");
                         chdir(newDirectory);
                         getcwd(presentDirectory, 60);
