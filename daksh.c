@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 void eMessage(void) {
     char errorMessage[30] = "An error has occurred\n";
@@ -44,6 +45,8 @@ char** breakString(char* inputString, int *count) {
 
 int main(int argc, char* argv[]) {
 
+    bool run = true;
+
     // program invoked with more than 2 arguments
     // exit program after error message
     if (argc > 2) {
@@ -62,27 +65,44 @@ int main(int argc, char* argv[]) {
         // read input
         ssize_t length = getline(&input, &capacity, stdin);
 
+        // error: EOF reached without reading characters
         if (length < 0){
             eMessage();
         }
 
+        // empty string entered
+        else if (strcmp(input, "\n") == 0) {
+            // do nothing, start loop over
+        }
+
+        // string entered
         else {
+            // replace newline with terminator
             input[length - 1] = '\0';
+            char* word;
 
-            int count = 0;
-
-            char** words = breakString(input, &count);
-
-            for(int i = 0; i < count; i++) {
-                printf("%s\n", words[i]);
+            // break the string into tokens
+            //int count = 0;
+            //char** words = breakString(input, &count);
+            int i = 1;
+            while ((word = strsep(&input, " ")) != 0) {
+                printf("Token %d is %s\n", i, word);
+                i++;
             }
-            
-            free(words);
+
+            // "exit" entered
+            //if (strcmp(words[0], "exit") == 0) {
+            //    exit(0);
+            //}
+
+
+
+            //free(words);
         }
 
 
 
-    } while (strcmp(input, "exit")!= 0);
+    } while (run);
 
     free(input);
 
