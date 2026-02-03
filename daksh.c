@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 void eMessage(void) {
     char errorMessage[30] = "An error has occurred\n";
@@ -108,14 +109,14 @@ int main(int argc, char* argv[]) {
                 
             }
 
-            // pwd command
-            if (strcmp(words[0], "pwd") == 0) {
+            /* pwd command
+            else if (strcmp(words[0], "pwd") == 0) {
                 getcwd(presentDirectory, 60);
                 printf("%s\n", presentDirectory);
-            }
+            }*/
 
             // path command
-            if (strcmp(words[0], "path") == 0) {
+            else if (strcmp(words[0], "path") == 0) {
                 char* paths[20];
 
                 // count arguments to path
@@ -143,10 +144,39 @@ int main(int argc, char* argv[]) {
                             newPath = malloc(len);
                             snprintf(newPath, len, "%s:%s", presentPath, path);
                             setenv("PATH", newPath, 1);
+                            free(newPath);
                         }
                     }
                 }
                 printf("%s\n", getenv("PATH"));
+            }
+
+            // external commands
+            else {
+                pid_t pid = fork();
+
+                if (pid == -1) {
+                    eMessage();
+                }
+                else if (pid == 0) {
+                    int t = 0;
+                    for(int x = 1; words[x] != NULL; x++) {
+                        t++;
+                    }
+                    char* args[t + 1];
+                    for (int p = 0; p < t; p++) {
+                        args[p] = words[p+1];
+                    }
+                    args[t] = NULL;
+
+                    execvp(words[0], args);
+
+                    exit(0);
+                }
+                else {
+                    wait(NULL);
+                }
+
             }
 
             for(int j = 0; j < 10; j++) {
