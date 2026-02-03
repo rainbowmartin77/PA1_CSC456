@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
+// only error message for entire program
 void eMessage(void) {
     char errorMessage[30] = "An error has occurred\n";
     write(STDERR_FILENO, errorMessage, strlen(errorMessage));
@@ -60,7 +61,6 @@ void exCommand(char* words[]) {
                 getcwd(presentDirectory, 60);
             }
         }
-        
     }
 
     // path command
@@ -75,11 +75,13 @@ void exCommand(char* words[]) {
             }
         }
 
+        // clearing PATH
         if(c == 1 && strcmp(words[1], "clear") == 0) {
             // clear the path
             setenv("PATH", "", 1);
         }
 
+        // adding to PATH
         else {
             for (int i = 1; words[i] != NULL; i++) {
                 char* presentPath = getenv("PATH");
@@ -96,7 +98,7 @@ void exCommand(char* words[]) {
                 }
             }
         }
-        printf("%s\n", getenv("PATH"));
+        //printf("%s\n", getenv("PATH"));
     }
 
     // external commands
@@ -131,6 +133,7 @@ void breakString(char** words, char* input, ssize_t length) {
         words[i] = word;
         i++;
     }
+    // make sure list of words in null terminated
     words[i+1] = NULL;
     
     return;
@@ -188,7 +191,7 @@ int main(int argc, char* argv[]) {
             fclose(file);
         }
 
-        // enter interactive mode
+        // no file passed in, enter interactive mode
         else if (argc == 1) {
             // print prompt
             printf("daksh> ");
