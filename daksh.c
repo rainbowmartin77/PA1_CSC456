@@ -98,7 +98,7 @@ void exCommand(char* words[]) {
                 }
             }
         }
-        //printf("%s\n", getenv("PATH"));
+        printf("%s\n", getenv("PATH"));
     }
 
     // external commands
@@ -148,6 +148,7 @@ void clearWords(char** words) {
 }
 
 int main(int argc, char* argv[]) {
+    setenv("PATH", "/bin", 1);
 
     bool run = true;
 
