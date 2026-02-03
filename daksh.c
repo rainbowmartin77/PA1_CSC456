@@ -15,13 +15,6 @@ int main(int argc, char* argv[]) {
 
     bool run = true;
 
-    // variables to store directories
-    char presentDirectory[60];
-    getcwd(presentDirectory, 60);
-
-    char previousDirectory[60];
-    const char *home = "/home";
-
     // program invoked with more than 2 arguments
     // exit program after error message
     if (argc > 2) {
@@ -84,6 +77,12 @@ int main(int argc, char* argv[]) {
 
             // cd command
             if (strcmp(words[0], "cd") == 0) {
+                // variables to store directories
+                char presentDirectory[60];
+                getcwd(presentDirectory, 60);
+
+                char previousDirectory[60];
+                const char *home = "/home";
                 char newDirectory[60];
 
                 // count arguments to cd
