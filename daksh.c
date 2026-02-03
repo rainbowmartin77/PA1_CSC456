@@ -29,16 +29,29 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    // character array to hold input
-    char *input = NULL;
-    size_t capacity = 0;
-
     do {
-        // print prompt
-        printf("daksh> ");
+        char *input = NULL;
+        size_t capacity = 0;
+        ssize_t length;
 
-        // read input
-        ssize_t length = getline(&input, &capacity, stdin);
+        if (argc == 2) {
+
+            FILE *file = fopen(argv[1], "r");
+
+            // read input
+            length = getline(&input, &capacity, file);
+            printf("%s\n", input);
+
+            fclose(file);
+        }
+
+        else if ( argc == 1) {
+            // print prompt
+            printf("daksh> ");
+
+            // read input
+            length = getline(&input, &capacity, stdin);
+        }
 
         // error: EOF reached without reading characters
         if (length < 0){
@@ -109,12 +122,6 @@ int main(int argc, char* argv[]) {
                 
             }
 
-            /* pwd command
-            else if (strcmp(words[0], "pwd") == 0) {
-                getcwd(presentDirectory, 60);
-                printf("%s\n", presentDirectory);
-            }*/
-
             // path command
             else if (strcmp(words[0], "path") == 0) {
                 char* paths[20];
@@ -182,12 +189,12 @@ int main(int argc, char* argv[]) {
             for(int j = 0; j < 10; j++) {
                 words[j] = '\0';
             }
-            
+
+            free(input);
+            printf("Test\n");
         }
 
     } while (run);
-
-    free(input);
 
     return 0;
 }
