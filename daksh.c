@@ -147,53 +147,46 @@ int main(int argc, char* argv[]) {
         char *input = NULL;
         size_t capacity = 0;
         ssize_t length;
+        char* words[10];
 
         if (argc == 2) {
 
             FILE *file = fopen(argv[1], "r");
 
-            // read input
-            length = getline(&input, &capacity, file);
-            printf("%s\n", input);
+            do {
+                // read input
+                length = getline(&input, &capacity, file);
+                breakString(words, input, length);
+
+                // reached EOF
+                if(length == -1) {
+                    exit(0);
+                }
+
+                // next line exists
+                else if (length != -1) {
+                    // execute command
+                    exCommand(words);
+
+                    // clear words array
+                    for(int x = 0; words[x] != NULL; x++) {
+                        words[x] = NULL;
+                    }
+                }
+            } while (length != -1);
 
             fclose(file);
         }
 
-        else if ( argc == 1) {
+        else if (argc == 1) {
             // print prompt
             printf("daksh> ");
 
             // read input
             length = getline(&input, &capacity, stdin);
-        }
-
-        // error: EOF reached without reading characters
-        if (length < 0){
-            eMessage();
-        }
-
-        // empty string entered
-        else if (strcmp(input, "\n") == 0) {
-            // do nothing, start loop over
-        }
-
-        // string entered
-        else {
-            char* words[10];
-
             breakString(words, input, length);
 
             exCommand(words);
-
-            for(int j = 0; j < 10; j++) {
-                words[j] = '\0';
-            }
-
-            free(input);
-        }
-
-        if (argc == 2) {
-            argc = 1;
         }
 
     } while (run);
