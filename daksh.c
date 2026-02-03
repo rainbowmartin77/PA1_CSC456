@@ -49,7 +49,7 @@ void exCommand(char* words[]) {
                 // make sure directory is valid
                 int working = chdir(newDirectory);
                 if( working != 0) {
-                    perror("chdir");
+                    eMessage();
                 }
                 // store current directory
                 getcwd(presentDirectory, 60);
