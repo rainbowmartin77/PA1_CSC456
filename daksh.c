@@ -118,6 +118,20 @@ void exCommand(char* words[]) {
     }
 }
 
+void breakString(char** words, char* input, ssize_t length) {
+    // replace newline with terminator
+    input[length - 1] = '\0';
+    char* word;
+
+    // break the string into tokens
+    int i = 0;
+    while ((word = strsep(&input, " ")) != 0) {
+        words[i] = word;
+        i++;
+    }
+    return;
+}
+
 int main(int argc, char* argv[]) {
 
     bool run = true;
@@ -165,17 +179,9 @@ int main(int argc, char* argv[]) {
 
         // string entered
         else {
-            // replace newline with terminator
-            input[length - 1] = '\0';
-            char* word;
             char* words[10];
 
-            // break the string into tokens
-            int i = 0;
-            while ((word = strsep(&input, " ")) != 0) {
-                words[i] = word;
-                i++;
-            }
+            breakString(words, input, length);
 
             exCommand(words);
 
