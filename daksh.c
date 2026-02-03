@@ -191,7 +191,10 @@ int main(int argc, char* argv[]) {
             }
 
             free(input);
-            printf("Test\n");
+        }
+
+        if (argc == 2) {
+            argc = 1;
         }
 
     } while (run);
