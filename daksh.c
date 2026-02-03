@@ -165,17 +165,7 @@ int main(int argc, char* argv[]) {
                     eMessage();
                 }
                 else if (pid == 0) {
-                    int t = 0;
-                    for(int x = 1; words[x] != NULL; x++) {
-                        t++;
-                    }
-                    char* args[t + 1];
-                    for (int p = 0; p < t; p++) {
-                        args[p] = words[p+1];
-                    }
-                    args[t] = NULL;
-
-                    execvp(words[0], args);
+                    execvp(words[0], words);
 
                     exit(0);
                 }
