@@ -1,4 +1,6 @@
-ls -la
 pwd
-cd ..
+pwd
+pwd
+testthis
+pwd
 pwd

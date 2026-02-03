@@ -12,6 +12,14 @@ void eMessage(void) {
     write(STDERR_FILENO, errorMessage, strlen(errorMessage));
 }
 
+void clearWords(char** words) {
+    // clear words array
+    for(int x = 0; words[x] != NULL; x++) {
+        words[x] = NULL;
+    }
+    return;
+}
+
 void exCommand(char* words[]) {
     // "exit" entered
     if (strcmp(words[0], "exit") == 0) {
@@ -98,7 +106,6 @@ void exCommand(char* words[]) {
                 }
             }
         }
-        printf("%s\n", getenv("PATH"));
     }
 
     // external commands
@@ -120,6 +127,10 @@ void exCommand(char* words[]) {
         }
 
     }
+
+    clearWords(words);
+
+    return;
 }
 
 void breakString(char** words, char* input, ssize_t length) {
@@ -136,14 +147,6 @@ void breakString(char** words, char* input, ssize_t length) {
     // make sure list of words in null terminated
     words[i+1] = NULL;
     
-    return;
-}
-
-void clearWords(char** words) {
-    // clear words array
-    for(int x = 0; words[x] != NULL; x++) {
-        words[x] = NULL;
-    }
     return;
 }
 
@@ -177,18 +180,18 @@ int main(int argc, char* argv[]) {
 
                 // reached EOF
                 if(length == -1) {
+                    clearWords(words);
                     exit(0);
                 }
 
                 // next line exists
-                else if (length != -1) {
-                    // execute command
-                    exCommand(words);
+                // execute command
+                exCommand(words);
+                clearWords(words);
 
-                    clearWords(words);
-                }
             } while (length != -1);
 
+            free(input);
             fclose(file);
         }
 
