@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
 
 void eMessage(void) {
     char errorMessage[30] = "An error has occurred\n";
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
             if (strcmp(words[0], "cd") == 0) {
                 char newDirectory[60];
 
+                // count arguments to cd
                 int c = 0;
                 for(int i = 1; i < 3; i++){
                     if (words[i] != NULL) {
@@ -78,10 +80,13 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
+                // if there is not one argument, error
                 if (c != 1) {
                     eMessage();
                 }
+
                 else {
+                    // argument does not equal "~", go to directory entered
                     if (strcmp(words[1], "~") != 0) {
                         strcpy(newDirectory, words[1]);
 
@@ -93,6 +98,7 @@ int main(int argc, char* argv[]) {
                         // store current directory
                         getcwd(presentDirectory, 60);
                     }
+                    // arguemnt is "~" and redirects to home
                     else if (strcmp(words[1], "~") == 0) {
                         strcpy(newDirectory, "/home");
                         chdir(newDirectory);
@@ -102,9 +108,45 @@ int main(int argc, char* argv[]) {
                 
             }
 
+            // pwd command
             if (strcmp(words[0], "pwd") == 0) {
                 getcwd(presentDirectory, 60);
                 printf("%s\n", presentDirectory);
+            }
+
+            // path command
+            if (strcmp(words[0], "path") == 0) {
+                char* paths[20];
+
+                // count arguments to path
+                int c = 0;
+                for(int i = 1; i < 10; i++){
+                    if (words[i] != NULL) {
+                        c++;
+                    }
+                }
+
+                if(c == 1 && strcmp(words[1], "clear") == 0) {
+                    // clear the path
+                    setenv("PATH", "", 1);
+                }
+
+                else {
+                    for (int i = 1; words[i] != NULL; i++) {
+                        char* presentPath = getenv("PATH");
+                        char path[50];
+                        strcpy(path, words[i]);
+                        char* newPath;
+                    
+                        if (strcmp(presentPath, "") != 0) {
+                            size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
+                            newPath = malloc(len);
+                            snprintf(newPath, len, "%s:%s", presentPath, path);
+                            setenv("PATH", newPath, 1);
+                        }
+                    }
+                }
+                printf("%s\n", getenv("PATH"));
             }
 
             for(int j = 0; j < 10; j++) {
