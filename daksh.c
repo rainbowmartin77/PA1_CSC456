@@ -18,7 +18,7 @@ void exCommand(char* words[]) {
     }
 
     // cd command
-    if (strcmp(words[0], "cd") == 0) {
+    else if (strcmp(words[0], "cd") == 0) {
         // variables to store directories
         char presentDirectory[60];
         getcwd(presentDirectory, 60);
@@ -109,6 +109,8 @@ void exCommand(char* words[]) {
         else if (pid == 0) {
             execvp(words[0], words);
 
+            eMessage();
+
             exit(0);
         }
         else {
@@ -129,6 +131,8 @@ void breakString(char** words, char* input, ssize_t length) {
         words[i] = word;
         i++;
     }
+    words[i+1] = NULL;
+    
     return;
 }
 
