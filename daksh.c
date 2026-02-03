@@ -132,6 +132,14 @@ void breakString(char** words, char* input, ssize_t length) {
     return;
 }
 
+void clearWords(char** words) {
+    // clear words array
+    for(int x = 0; words[x] != NULL; x++) {
+        words[x] = NULL;
+    }
+    return;
+}
+
 int main(int argc, char* argv[]) {
 
     bool run = true;
@@ -149,6 +157,7 @@ int main(int argc, char* argv[]) {
         ssize_t length;
         char* words[10];
 
+        // if file entered as argument, enter batch mode
         if (argc == 2) {
 
             FILE *file = fopen(argv[1], "r");
@@ -168,16 +177,14 @@ int main(int argc, char* argv[]) {
                     // execute command
                     exCommand(words);
 
-                    // clear words array
-                    for(int x = 0; words[x] != NULL; x++) {
-                        words[x] = NULL;
-                    }
+                    clearWords(words);
                 }
             } while (length != -1);
 
             fclose(file);
         }
 
+        // enter interactive mode
         else if (argc == 1) {
             // print prompt
             printf("daksh> ");
@@ -187,6 +194,8 @@ int main(int argc, char* argv[]) {
             breakString(words, input, length);
 
             exCommand(words);
+
+            clearWords(words);
         }
 
     } while (run);
