@@ -1,1 +1,1 @@
-pwd & cd .. & pwd
+pwd & cd ~ & echo this

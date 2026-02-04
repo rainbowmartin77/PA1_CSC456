@@ -89,18 +89,37 @@ int main(int argc, char* argv[]) {
 void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length) {
     clearWords(words);
     breakCommands(multipleCommands, input, length);
-    //breakString(words, input, length);
+    int children = 0;
 
-    for (int i = 0; multipleCommands[i] != NULL; i++) {
-        if (i > 0) {
-            length = strlen(multipleCommands[i]) + 1;
+    pid_t pid;
+
+    for (int m = 0; multipleCommands[m] != NULL; m++) {
+        children++;
+    }
+
+    for (int proc = 0; proc < children; proc++) {
+
+        pid = fork();
+
+        if (pid == 0) {
+            if (proc > 0) {
+                length = strlen(multipleCommands[proc]) + 1;
+            }
+            breakString(words, multipleCommands[proc], length);
+            exCommand(words);
+            clearWords(words);
+
+            _exit(0);
         }
-        breakString(words, multipleCommands[i], length);
-        //for (int n = 0; words[n] != NULL; n++) {
-        //    printf("%s\n", words[n]);
-        //}
-        exCommand(words);
-        clearWords(words);
+        else if (pid < 0) {
+            eMessage();
+            exit(1);
+        }
+
+    }
+
+    for (int x = 0; x < children; x++) {
+        wait(NULL);
     }
 }
 
