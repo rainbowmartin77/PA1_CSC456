@@ -18,6 +18,8 @@ void breakString(char** words, char* input, ssize_t length);
 
 void breakCommands(char** multipleCommands, char* input, ssize_t length);
 
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length);
+
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
@@ -45,15 +47,14 @@ int main(int argc, char* argv[]) {
 
             while ((length = getline(&input, &capacity, file))!= -1) {
 
-                // read input
-                breakString(words, input, length);
-                words[length] = NULL;
-
-                // next line exists
-                // execute command
-                exCommand(words);
-
-                clearWords(words);   
+                if (strchr(input, '&')) {
+                    parallelCommands(multipleCommands, words, input, length);
+                }
+                else {
+                    breakString(words, input, length);
+                    exCommand(words);
+                    clearWords(words);
+                }  
             }
 
             fclose(file);
@@ -71,27 +72,11 @@ int main(int argc, char* argv[]) {
             length = getline(&input, &capacity, stdin);
 
             if (strchr(input, '&')) {
-                clearWords(words);
-                breakCommands(multipleCommands, input, length);
-                //breakString(words, input, length);
-
-                for (int i = 0; multipleCommands[i] != NULL; i++) {
-                    if (i > 0) {
-                        length = strlen(multipleCommands[i]) + 1;
-                    }
-                    breakString(words, multipleCommands[i], length);
-                    //for (int n = 0; words[n] != NULL; n++) {
-                    //    printf("%s\n", words[n]);
-                    //}
-                    exCommand(words);
-                    clearWords(words);
-                }
+                parallelCommands(multipleCommands, words, input, length);
             }
             else {
                 breakString(words, input, length);
-
                 exCommand(words);
-
                 clearWords(words);
             }
         }
@@ -99,6 +84,24 @@ int main(int argc, char* argv[]) {
     } while (run);
 
     return 0;
+}
+
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length) {
+    clearWords(words);
+    breakCommands(multipleCommands, input, length);
+    //breakString(words, input, length);
+
+    for (int i = 0; multipleCommands[i] != NULL; i++) {
+        if (i > 0) {
+            length = strlen(multipleCommands[i]) + 1;
+        }
+        breakString(words, multipleCommands[i], length);
+        //for (int n = 0; words[n] != NULL; n++) {
+        //    printf("%s\n", words[n]);
+        //}
+        exCommand(words);
+        clearWords(words);
+    }
 }
 
 void eMessage(void) {
