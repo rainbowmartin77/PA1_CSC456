@@ -15,6 +15,8 @@ void exCommand(char* words[]);
 
 void breakString(char** words, char* input, ssize_t length);
 
+void breakCommands(char** multipleCommands, char* input, ssize_t length);
+
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
@@ -33,6 +35,7 @@ int main(int argc, char* argv[]) {
         size_t capacity = 0;
         ssize_t length = 0;
         char* words[10];
+        char* multipleCommands[10];
 
         // if file entered as argument, enter batch mode
         if (argc == 2) {
@@ -65,11 +68,23 @@ int main(int argc, char* argv[]) {
 
             // read input
             length = getline(&input, &capacity, stdin);
-            breakString(words, input, length);
 
-            exCommand(words);
+            if (strchr(input, '&')) {
+                breakCommands(multipleCommands, input, length);
+                //breakString(words, input, length);
 
-            clearWords(words);
+                breakString(words, multipleCommands[0], strlen(multipleCommands[0]));
+                
+                exCommand(words);
+                clearWords(words);
+            }
+            else {
+                breakString(words, input, length);
+
+                exCommand(words);
+
+                clearWords(words);
+            }
         }
 
     } while (run);
@@ -86,15 +101,36 @@ void breakString(char** words, char* input, ssize_t length) {
     // replace newline with terminator
     input[length - 1] = '\0';
     char* word;
+    char del[] = {' ', '\t', '&'};
 
     // break the string into tokens
     int i = 0;
-    while ((word = strsep(&input, " ")) != 0) {
-        words[i] = word;
-        i++;
+    while ((word = strsep(&input, del)) != 0) {
+        if (strcmp(word, "") != 0) {
+            words[i] = word;
+            i++;
+        }
     }
     // make sure list of words in null terminated
     words[i+1] = NULL;
+    
+    return;
+}
+
+void breakCommands(char** multipleCommands, char *input, ssize_t length) {
+    // replace newline with terminator
+    input[length - 1] = '\0';
+    char* command;
+    char del[] = {'&'};
+
+    // break the string into tokens
+    int i = 0;
+    while ((command = strsep(&input, del)) != 0) {
+        multipleCommands[i] = command;
+        i++;
+    }
+    // make sure list of words in null terminated
+    multipleCommands[i+1] = NULL;
     
     return;
 }
