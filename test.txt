@@ -1,6 +1,5 @@
 pwd
+cd ..
+testtest
 pwd
-pwd
-testthis
-pwd
-pwd
+cd ..
