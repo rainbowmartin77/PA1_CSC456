@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 // only error message for entire program
 void eMessage(void);
@@ -70,13 +71,21 @@ int main(int argc, char* argv[]) {
             length = getline(&input, &capacity, stdin);
 
             if (strchr(input, '&')) {
+                clearWords(words);
                 breakCommands(multipleCommands, input, length);
                 //breakString(words, input, length);
 
-                breakString(words, multipleCommands[0], strlen(multipleCommands[0]));
-                
-                exCommand(words);
-                clearWords(words);
+                for (int i = 0; multipleCommands[i] != NULL; i++) {
+                    if (i > 0) {
+                        length = strlen(multipleCommands[i]) + 1;
+                    }
+                    breakString(words, multipleCommands[i], length);
+                    //for (int n = 0; words[n] != NULL; n++) {
+                    //    printf("%s\n", words[n]);
+                    //}
+                    exCommand(words);
+                    clearWords(words);
+                }
             }
             else {
                 breakString(words, input, length);
@@ -101,12 +110,12 @@ void breakString(char** words, char* input, ssize_t length) {
     // replace newline with terminator
     input[length - 1] = '\0';
     char* word;
-    char del[] = {' ', '\t', '&'};
+    char del[] = {' ', '\t'};
 
     // break the string into tokens
     int i = 0;
     while ((word = strsep(&input, del)) != 0) {
-        if (strcmp(word, "") != 0) {
+        if ((strcmp(word, "") != 0)) {
             words[i] = word;
             i++;
         }
@@ -126,6 +135,11 @@ void breakCommands(char** multipleCommands, char *input, ssize_t length) {
     // break the string into tokens
     int i = 0;
     while ((command = strsep(&input, del)) != 0) {
+        char* first = command;
+        while(isspace((unsigned char)*first)){
+            first++;
+        }
+        command = first;
         multipleCommands[i] = command;
         i++;
     }
