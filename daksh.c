@@ -167,9 +167,10 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
     for (int x = 0; x < children; x++) {
         wait(NULL);
     }
-
     read(parentPipe[0], presentDirectory, 60);
     chdir(presentDirectory);
+    close(parentPipe[0]);
+    clearWords(multipleCommands);
 }
 
 void eMessage(void) {
