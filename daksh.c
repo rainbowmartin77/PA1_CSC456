@@ -45,6 +45,11 @@ int main(int argc, char* argv[]) {
 
             FILE *file = fopen(argv[1], "r");
 
+            if (file == NULL) {
+                eMessage();
+                exit(1);
+            }
+
             while ((length = getline(&input, &capacity, file))!= -1) {
 
                 if (strchr(input, '&')) {
