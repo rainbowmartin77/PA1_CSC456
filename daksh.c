@@ -12,13 +12,13 @@ void eMessage(void);
 
 void clearWords(char** words);
 
-void exCommand(char* words[]);
+void exCommand(char* words[], char presentDirectory[]);
 
 void breakString(char** words, char* input, ssize_t length);
 
 void breakCommands(char** multipleCommands, char* input, ssize_t length);
 
-void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length);
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[]);
 
 int main(int argc, char* argv[]) {
     // set initial path to /bin
@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
         ssize_t length = 0;
         char* words[10];
         char* multipleCommands[10];
+        char presentDirectory[60];
 
         // if file entered as argument, enter batch mode
         if (argc == 2) {
@@ -53,15 +54,18 @@ int main(int argc, char* argv[]) {
             while ((length = getline(&input, &capacity, file))!= -1) {
 
                 if (strchr(input, '&')) {
-                    parallelCommands(multipleCommands, words, input, length);
+                    parallelCommands(multipleCommands, words, input, length, presentDirectory);
                 }
                 else {
                     breakString(words, input, length);
-                    exCommand(words);
+                    if (strcmp(words[0], "exit") == 0) {
+                        // leave loop to close file if exit is read
+                        break;
+                    }
+                    exCommand(words, presentDirectory);
                     clearWords(words);
                 }  
             }
-
             fclose(file);
             exit(0);
 
@@ -77,11 +81,11 @@ int main(int argc, char* argv[]) {
             length = getline(&input, &capacity, stdin);
 
             if (strchr(input, '&')) {
-                parallelCommands(multipleCommands, words, input, length);
+                parallelCommands(multipleCommands, words, input, length, presentDirectory);
             }
             else {
                 breakString(words, input, length);
-                exCommand(words);
+                exCommand(words, presentDirectory);
                 clearWords(words);
             }
         }
@@ -91,10 +95,13 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length) {
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[]) {
     clearWords(words);
     breakCommands(multipleCommands, input, length);
     int children = 0;
+
+    int pipefd[2];
+
 
     pid_t pid;
 
@@ -111,7 +118,7 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
                 length = strlen(multipleCommands[proc]) + 1;
             }
             breakString(words, multipleCommands[proc], length);
-            exCommand(words);
+            exCommand(words, presentDirectory);
             clearWords(words);
 
             _exit(0);
@@ -176,7 +183,8 @@ void breakCommands(char** multipleCommands, char *input, ssize_t length) {
     return;
 }
 
-void exCommand(char* words[]) {
+void exCommand(char* words[],  char presentDirectory[]) {
+
     // "exit" entered
     if (strcmp(words[0], "exit") == 0) {
         exit(0);
@@ -185,7 +193,6 @@ void exCommand(char* words[]) {
     // cd command
     else if (strcmp(words[0], "cd") == 0) {
         // variables to store directories
-        char presentDirectory[60];
         getcwd(presentDirectory, 60);
 
         char previousDirectory[60];
