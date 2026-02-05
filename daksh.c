@@ -118,8 +118,11 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
                 length = strlen(multipleCommands[proc]) + 1;
             }
             breakString(words, multipleCommands[proc], length);
-            exCommand(words, presentDirectory);
-            clearWords(words);
+
+            if (strcmp(words[0], "cd") != 0) {
+                exCommand(words, presentDirectory);
+                clearWords(words);
+            }
 
             _exit(0);
         }
