@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 // only error message for entire program
 void eMessage(void);
@@ -40,6 +41,8 @@ int main(int argc, char* argv[]) {
         char* words[10];
         char* multipleCommands[10];
         char presentDirectory[60];
+
+        getcwd(presentDirectory, 60);
 
         // if file entered as argument, enter batch mode
         if (argc == 2) {
@@ -100,8 +103,11 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
     breakCommands(multipleCommands, input, length);
     int children = 0;
 
-    int pipefd[2];
+    int parentPipe[2];
+    int childPipe[2];
 
+    pipe(parentPipe);
+    pipe(childPipe);
 
     pid_t pid;
 
@@ -114,11 +120,35 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
         pid = fork();
 
         if (pid == 0) {
+            int flags = fcntl(childPipe[0], F_GETFL, 0);
+            fcntl(childPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+            // if information available in child pipe (ie another child executed cd)
+            // update the current directory of this process
+            ssize_t info = read(childPipe[0], presentDirectory, 60);
+            close(childPipe[0]);
+            if (info > 0) {
+                chdir(presentDirectory);
+            }
+
             if (proc > 0) {
                 length = strlen(multipleCommands[proc]) + 1;
             }
             breakString(words, multipleCommands[proc], length);
 
+            // if a child process is executing cd
+            if (strcmp(words[0], "cd") == 0) {
+                exCommand(words, presentDirectory);
+                clearWords(words);
+                // write to child pipe
+                write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                close (childPipe[1]);
+                // write to the parent process
+                write(parentPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                close(parentPipe[1]);
+            }
+
+            // execute command normally if not cd
             if (strcmp(words[0], "cd") != 0) {
                 exCommand(words, presentDirectory);
                 clearWords(words);
@@ -133,9 +163,13 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
     }
 
+    // wait for all child processes to end
     for (int x = 0; x < children; x++) {
         wait(NULL);
     }
+
+    read(parentPipe[0], presentDirectory, 60);
+    chdir(presentDirectory);
 }
 
 void eMessage(void) {
