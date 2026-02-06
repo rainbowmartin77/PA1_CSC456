@@ -167,10 +167,20 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
     for (int x = 0; x < children; x++) {
         wait(NULL);
     }
-    read(parentPipe[0], presentDirectory, 60);
-    chdir(presentDirectory);
+    int flags = fcntl(childPipe[0], F_GETFL, 0);
+    fcntl(parentPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+    // if information available in parent pipe (ie cd was executed)
+    // update the current directory of this process
+    ssize_t info = read(parentPipe[0], presentDirectory, 60);
     close(parentPipe[0]);
+    if (info > 0) {
+        chdir(presentDirectory);
+    }
+    
     clearWords(multipleCommands);
+
+    return;
 }
 
 void eMessage(void) {
