@@ -13,13 +13,15 @@ void eMessage(void);
 
 void clearWords(char** words);
 
-void exCommand(char* words[], char presentDirectory[]);
+void exCommand(char* words[], char presentDirectory[], char** files);
 
 void breakString(char** words, char* input, ssize_t length);
 
 void breakCommands(char** multipleCommands, char* input, ssize_t length);
 
-void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[]);
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[], char** files);
+
+void redirectIncluded(char** words, char** files, char* input, char presentDirectory[]);
 
 int main(int argc, char* argv[]) {
     // set initial path to /bin
@@ -39,6 +41,7 @@ int main(int argc, char* argv[]) {
         size_t capacity = 0;
         ssize_t length = 0;
         char* words[10];
+        char* files[10];
         char* multipleCommands[10];
         char presentDirectory[60];
 
@@ -57,7 +60,7 @@ int main(int argc, char* argv[]) {
             while ((length = getline(&input, &capacity, file))!= -1) {
 
                 if (strchr(input, '&')) {
-                    parallelCommands(multipleCommands, words, input, length, presentDirectory);
+                    parallelCommands(multipleCommands, words, input, length, presentDirectory, files);
                 }
                 else {
                     breakString(words, input, length);
@@ -65,7 +68,7 @@ int main(int argc, char* argv[]) {
                         // leave loop to close file if exit is read
                         break;
                     }
-                    exCommand(words, presentDirectory);
+                    exCommand(words, presentDirectory, files);
                     clearWords(words);
                 }  
             }
@@ -84,12 +87,19 @@ int main(int argc, char* argv[]) {
             length = getline(&input, &capacity, stdin);
 
             if (strchr(input, '&')) {
-                parallelCommands(multipleCommands, words, input, length, presentDirectory);
+                parallelCommands(multipleCommands, words, input, length, presentDirectory, files);
             }
             else {
-                breakString(words, input, length);
-                exCommand(words, presentDirectory);
-                clearWords(words);
+                // if command has redirect
+                if (strchr(input, '>')){
+                    redirectIncluded(words, files, input, presentDirectory);
+                }
+
+                else {
+                    breakString(words, input, length);
+                    exCommand(words, presentDirectory, files);
+                    clearWords(words);
+                }
             }
         }
 
@@ -98,7 +108,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[]) {
+void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[], char** files) {
     clearWords(words);
     breakCommands(multipleCommands, input, length);
     int children = 0;
@@ -138,7 +148,7 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
             // if a child process is executing cd
             if (strcmp(words[0], "cd") == 0) {
-                exCommand(words, presentDirectory);
+                exCommand(words, presentDirectory, files);
                 clearWords(words);
                 // write to child pipe
                 write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
@@ -150,7 +160,7 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
             // execute command normally if not cd
             if (strcmp(words[0], "cd") != 0) {
-                exCommand(words, presentDirectory);
+                exCommand(words, presentDirectory, files);
                 clearWords(words);
             }
 
@@ -186,6 +196,34 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 void eMessage(void) {
     char errorMessage[30] = "An error has occurred\n";
     write(STDERR_FILENO, errorMessage, strlen(errorMessage));
+}
+
+void redirectIncluded(char** words, char** files, char* input, char presentDirectory[]) {
+    char* redirectCommand;
+    char* redirectLines[3];
+
+    char del[] = {">"};
+    // if command has redirect
+    if (strchr(input, '>')){
+        // separate command from output file
+        int i = 0;
+        while ((redirectCommand = strsep(&input, del))!= 0) {
+            char* first = redirectCommand;
+            while(isspace((unsigned char)*first)){
+                first++;
+            }
+            redirectCommand = first;
+            redirectLines[i] = redirectCommand;
+            i++;
+        }
+        redirectLines[2] = NULL;
+
+        breakString(words, redirectLines[0], strlen(redirectLines[0]));
+        breakString(files, redirectLines[1], strlen(redirectLines[1]));
+        exCommand(words, presentDirectory, files);
+
+        clearWords(words);
+    }
 }
 
 void breakString(char** words, char* input, ssize_t length) {
@@ -231,7 +269,7 @@ void breakCommands(char** multipleCommands, char *input, ssize_t length) {
     return;
 }
 
-void exCommand(char* words[],  char presentDirectory[]) {
+void exCommand(char* words[],  char presentDirectory[], char** files) {
 
     // "exit" entered
     if (strcmp(words[0], "exit") == 0) {
