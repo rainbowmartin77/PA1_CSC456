@@ -93,6 +93,9 @@ int main(int argc, char* argv[]) {
                 // if command has redirect
                 if (strchr(input, '>')){
                     redirectIncluded(words, files, input, presentDirectory);
+                    exCommand(words, presentDirectory, files);
+                    clearWords(words);
+                    clearWords(files);
                 }
 
                 else {
@@ -220,9 +223,6 @@ void redirectIncluded(char** words, char** files, char* input, char presentDirec
 
         breakString(words, redirectLines[0], strlen(redirectLines[0]));
         breakString(files, redirectLines[1], strlen(redirectLines[1]));
-        exCommand(words, presentDirectory, files);
-
-        clearWords(words);
     }
 }
 
