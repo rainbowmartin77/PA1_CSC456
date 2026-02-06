@@ -63,13 +63,22 @@ int main(int argc, char* argv[]) {
                     parallelCommands(multipleCommands, words, input, length, presentDirectory, files);
                 }
                 else {
-                    breakString(words, input, length);
-                    if (strcmp(words[0], "exit") == 0) {
-                        // leave loop to close file if exit is read
-                        break;
+                    if(strchr(input, '>')){
+                        redirectIncluded(words, files, input, presentDirectory);
+                        exCommand(words, presentDirectory, files);
+                        clearWords(words);
+                        clearWords(files);
                     }
-                    exCommand(words, presentDirectory, files);
-                    clearWords(words);
+                    
+                    else {
+                        breakString(words, input, length);
+                        if (strcmp(words[0], "exit") == 0) {
+                            // leave loop to close file if exit is read
+                            break;
+                        }
+                        exCommand(words, presentDirectory, files);
+                        clearWords(words);
+                    }
                 }  
             }
             fclose(file);
@@ -147,6 +156,12 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
             if (proc > 0) {
                 length = strlen(multipleCommands[proc]) + 1;
             }
+
+            // one command has redirect
+            if (strchr(multipleCommands[proc], '>')) {
+                redirectIncluded(words, files, multipleCommands[proc], presentDirectory);
+            }
+
             breakString(words, multipleCommands[proc], length);
 
             // if a child process is executing cd
