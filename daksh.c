@@ -26,6 +26,8 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
+    int flagVal = 0;
+    int *flag = &flagVal;
 
     bool run = true;
 
@@ -45,8 +47,7 @@ int main(int argc, char* argv[]) {
         char* outputFile[20];
         char* multipleCommands[10];
         char presentDirectory[60];
-        int flagVal = 0;
-        int *flag = &flagVal;
+        
 
         getcwd(presentDirectory, 60);
 
@@ -104,11 +105,8 @@ int main(int argc, char* argv[]) {
             else {
                 // if command has redirect
                 if (strchr(input, '>')) {
-                   
                     redirectIncluded(words, outputFile, input, presentDirectory);
                     exCommand(words, presentDirectory, outputFile, flag);
-                    //*flag = 1;
-                    printf("%d\n", *flag);
                     clearWords(words);
                 }
 
