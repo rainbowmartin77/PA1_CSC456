@@ -69,14 +69,20 @@ int main(int argc, char* argv[]) {
                     parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
                 }
                 else {
+                    
                     // if command has redirect
                     if (strchr(input, '>')) {
+                        
                         bool good = checkRedirect(input);
+                        
 
                         if (good == true) {
                             redirectIncluded(words, outputFile, input, presentDirectory, flag);
                             exCommand(words, presentDirectory, outputFile, flag);
                             clearWords(words);
+                        }
+                        else{
+                            _exit(0);
                         }
                     }
                     
@@ -270,16 +276,19 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
 }
 
 bool checkRedirect (char* input) {
-    char* redir;
     char del[] = {">"};
     bool good = true;
+    char* string = input;
+    
     // if command has redirect
     // separate command from output file
     int i = 0;
-    while ((redir = strsep(&input, del))!= 0) {
+    while ((string = strchr(string, '>')) != NULL) {
         i++;
+        string++;
     }
-    if (i > 2) {
+    
+    if (i > 1) {
         eMessage();
         good = false;
     }
@@ -331,7 +340,7 @@ void breakCommands(char** multipleCommands, char *input, ssize_t length) {
 }
 
 void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* f) {
-
+    
     // "exit" entered
     if (strcmp(words[0], "exit") == 0) {
         
@@ -428,11 +437,14 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
 
     // external commands
     else {
+        
         int flagPipe[2];
         pipe(flagPipe);
 
         pid_t pid = fork();
         int output;
+
+        
 
         if (pid == -1) {
             eMessage();
@@ -440,9 +452,13 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
         else if (pid == 0) {
             close(flagPipe[0]);
 
+            
+
             if (outputFile[0] != NULL && *f == 0) {
 
                 output = open(outputFile[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+                
 
                 *f = 1;
                 write(flagPipe[1], f, sizeof(int));
@@ -457,6 +473,8 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
                     eMessage();
                     _exit(0);
                 }
+
+                
 
                 close(output);
                 execvp(words[0], words);

@@ -1,1 +1,1 @@
-ls > output.txt > test
+echo "test" > output.txt & ls -l & pwd

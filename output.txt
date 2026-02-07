@@ -1,6 +1,1 @@
-a.out
-daksh
-daksh.c
-output.txt
-test
-test.txt
+"test"
