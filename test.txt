@@ -1,5 +1,5 @@
-total 56
--rwxrwxr-x 1 dsu dsu 16048 Feb  1 14:21 a.out
--rwxrwxr-x 1 dsu dsu 21528 Feb  6 22:45 daksh
--rw-rw-r-- 1 dsu dsu 12144 Feb  6 22:44 daksh.c
--rw-rw-r-- 1 dsu dsu    13 Feb  6 17:48 test.txt
+a.out
+daksh
+daksh.c
+output.txt
+test.txt
