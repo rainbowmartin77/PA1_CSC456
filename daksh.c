@@ -387,10 +387,33 @@ void exCommand(char* words[],  char presentDirectory[], char** files) {
             eMessage();
         }
         else if (pid == 0) {
-            execvp(words[0], words);
+            if (files[0] != NULL) {
+                int output;
 
-            eMessage();
-            _exit(0);
+                output = open(files[0], O_WRONLY, 0644);
+
+                if (output == -1) {
+                    eMessage();
+                    _exit(0);
+                }
+
+                if (dup2(output, STDOUT_FILENO) == -1) {
+                    eMessage();
+                    _exit(0);
+                }
+
+                close(output);
+                clearWords(files);
+                execvp(words[0], words);
+                eMessage();
+                _exit(0);
+            }
+
+            else {
+                execvp(words[0], words);
+                eMessage();
+                _exit(0);
+            }
         }
         else {
             wait(NULL);
