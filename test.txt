@@ -1,5 +1,1 @@
-a.out
-daksh
-daksh.c
-output.txt
-test.txt
+5 output.txt

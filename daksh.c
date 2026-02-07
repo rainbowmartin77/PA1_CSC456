@@ -67,12 +67,13 @@ int main(int argc, char* argv[]) {
                     parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
                 }
                 else {
-                    if(strchr(input, '>')){
+                    // if command has redirect
+                    if (strchr(input, '>')) {
                         redirectIncluded(words, outputFile, input, presentDirectory, flag);
                         exCommand(words, presentDirectory, outputFile, flag);
-                        printf("%d\n", *flag);
                         clearWords(words);
                     }
+                    
                     
                     else {
                         breakString(words, input, length);
@@ -162,27 +163,31 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
             // one command has redirect
             if (strchr(multipleCommands[proc], '>')) {
-                redirectIncluded(words, outputFile, multipleCommands[proc], presentDirectory, flag);
-            }
-
-            breakString(words, multipleCommands[proc], length);
-
-            // if a child process is executing cd
-            if (strcmp(words[0], "cd") == 0) {
+                // if command has redirect
+                redirectIncluded(words, outputFile, input, presentDirectory, flag);
                 exCommand(words, presentDirectory, outputFile, flag);
                 clearWords(words);
-                // write to child pipe
-                write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
-                close (childPipe[1]);
-                // write to the parent process
-                write(parentPipe[1], presentDirectory, strlen(presentDirectory) + 1);
-                close(parentPipe[1]);
             }
+            else {
+                breakString(words, multipleCommands[proc], length);
 
-            // execute command normally if not cd
-            if (strcmp(words[0], "cd") != 0) {
-                exCommand(words, presentDirectory, outputFile, flag);
-                clearWords(words);
+                // if a child process is executing cd
+                if (strcmp(words[0], "cd") == 0) {
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                    // write to child pipe
+                    write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                    close (childPipe[1]);
+                    // write to the parent process
+                    write(parentPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                    close(parentPipe[1]);
+                }
+
+                // execute command normally if not cd
+                if (strcmp(words[0], "cd") != 0) {
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                }
             }
 
             _exit(0);
@@ -433,9 +438,9 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
                 _exit(0);
             }
 
-            else if (outputFile[0] != NULL && *f == 1) {
+            /*else if (outputFile[0] != NULL && *f == 1) {
                 printf("test\n");
-            }
+            }*/
 
             else {
                 execvp(words[0], words);

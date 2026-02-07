@@ -1,1 +1,5 @@
-1 test.txt
+a.out
+daksh
+daksh.c
+output.txt
+test.txt
