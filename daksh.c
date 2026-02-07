@@ -21,7 +21,7 @@ void breakCommands(char** multipleCommands, char* input, ssize_t length);
 
 void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[], char** outputFile, int* flag);
 
-void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag);
+bool redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag);
 
 bool checkRedirect (char* input);
 
@@ -74,12 +74,17 @@ int main(int argc, char* argv[]) {
                     if (strchr(input, '>')) {
                         
                         bool good = checkRedirect(input);
-                        
+                        bool oneArg;
 
                         if (good == true) {
-                            redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                            exCommand(words, presentDirectory, outputFile, flag);
-                            clearWords(words);
+                            oneArg = redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                            if (oneArg == false) {
+                                eMessage();
+                            }
+                            else {
+                                exCommand(words, presentDirectory, outputFile, flag);
+                                clearWords(words);
+                            }
                         }
                         else{
                             _exit(0);
@@ -118,11 +123,17 @@ int main(int argc, char* argv[]) {
             else {
                 if (strchr(input, '>')) {
                     bool good = checkRedirect(input);
+                    bool oneArg;
 
                     if (good == true) {
-                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                        exCommand(words, presentDirectory, outputFile, flag);
-                        clearWords(words);
+                        oneArg = redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                        if (oneArg == false) {
+                            eMessage();
+                        }
+                        else {
+                            exCommand(words, presentDirectory, outputFile, flag);
+                            clearWords(words);
+                        }
                     }
                 }
                 else {
@@ -238,10 +249,11 @@ void eMessage(void) {
     write(STDERR_FILENO, errorMessage, strlen(errorMessage));
 }
 
-void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag) {
+bool redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag) {
     char* redirectCommand;
-    char* redirectLines[3];
+    char* redirectLines[10];
     char* lastFile = NULL;
+    bool argument = true;
 
     if(outputFile != NULL) {
         lastFile = outputFile[0];
@@ -261,6 +273,10 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
             redirectLines[i] = redirectCommand;
             i++;
         }
+        if (i > 1) {
+            argument = false;
+            return argument;
+        }
         redirectLines[2] = NULL;
 
         breakString(words, redirectLines[0], strlen(redirectLines[0]));
@@ -271,6 +287,7 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
                 *flag = 0;
             }
         }
+        return argument;
 
     }
 }
