@@ -21,7 +21,7 @@ void breakCommands(char** multipleCommands, char* input, ssize_t length);
 
 void parallelCommands(char** multipleCommands, char* words[], char* input, ssize_t length, char presentDirectory[], char** outputFile, int* flag);
 
-void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[]);
+void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag);
 
 int main(int argc, char* argv[]) {
     // set initial path to /bin
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
                 }
                 else {
                     if(strchr(input, '>')){
-                        redirectIncluded(words, outputFile, input, presentDirectory);
+                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
                         exCommand(words, presentDirectory, outputFile, flag);
                         printf("%d\n", *flag);
                         clearWords(words);
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
             else {
                 // if command has redirect
                 if (strchr(input, '>')) {
-                    redirectIncluded(words, outputFile, input, presentDirectory);
+                    redirectIncluded(words, outputFile, input, presentDirectory, flag);
                     exCommand(words, presentDirectory, outputFile, flag);
                     clearWords(words);
                 }
@@ -162,7 +162,7 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
             // one command has redirect
             if (strchr(multipleCommands[proc], '>')) {
-                redirectIncluded(words, outputFile, multipleCommands[proc], presentDirectory);
+                redirectIncluded(words, outputFile, multipleCommands[proc], presentDirectory, flag);
             }
 
             breakString(words, multipleCommands[proc], length);
@@ -219,9 +219,14 @@ void eMessage(void) {
     write(STDERR_FILENO, errorMessage, strlen(errorMessage));
 }
 
-void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[]) {
+void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag) {
     char* redirectCommand;
     char* redirectLines[3];
+    char* lastFile = NULL;
+
+    if(outputFile != NULL) {
+        lastFile = outputFile[0];
+    }
 
     char del[] = {">"};
     // if command has redirect
@@ -241,6 +246,13 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
 
         breakString(words, redirectLines[0], strlen(redirectLines[0]));
         breakString(outputFile, redirectLines[1], strlen(redirectLines[1]));
+
+        if(lastFile != NULL) {
+            if(strcmp(lastFile, outputFile[0]) != 0) {
+                *flag = 0;
+            }
+        }
+
     }
 }
 
@@ -399,7 +411,7 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
 
             if (outputFile[0] != NULL && *f == 0) {
 
-                output = open(outputFile[0], O_WRONLY, 0644);
+                output = open(outputFile[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
                 *f = 1;
                 write(flagPipe[1], f, sizeof(int));
