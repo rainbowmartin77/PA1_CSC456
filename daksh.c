@@ -218,7 +218,7 @@ void eMessage(void) {
 
 void redirectIncluded(char** words, char** files, char* input, char presentDirectory[]) {
     char* redirectCommand;
-    char* redirectLines[3];
+    char* redirectLines[1];
 
     char del[] = {">"};
     // if command has redirect
