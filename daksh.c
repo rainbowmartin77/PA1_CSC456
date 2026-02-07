@@ -13,7 +13,7 @@ void eMessage(void);
 
 void clearWords(char** words);
 
-void exCommand(char* words[], char presentDirectory[], char** outputFile, int* flag);
+void exCommand(char* words[], char presentDirectory[], char** outputFile, int* f);
 
 void breakString(char** words, char* input, ssize_t length);
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         char* multipleCommands[10];
         char presentDirectory[60];
         int flagVal = 0;
-        int* flag = &flagVal;
+        int *flag = &flagVal;
 
         getcwd(presentDirectory, 60);
 
@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
                     if(strchr(input, '>')){
                         redirectIncluded(words, outputFile, input, presentDirectory);
                         exCommand(words, presentDirectory, outputFile, flag);
+                        printf("%d\n", *flag);
                         clearWords(words);
                     }
                     
@@ -103,8 +104,11 @@ int main(int argc, char* argv[]) {
             else {
                 // if command has redirect
                 if (strchr(input, '>')) {
+                   
                     redirectIncluded(words, outputFile, input, presentDirectory);
                     exCommand(words, presentDirectory, outputFile, flag);
+                    //*flag = 1;
+                    printf("%d\n", *flag);
                     clearWords(words);
                 }
 
@@ -285,7 +289,7 @@ void breakCommands(char** multipleCommands, char *input, ssize_t length) {
     return;
 }
 
-void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* flag) {
+void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* f) {
 
     // "exit" entered
     if (strcmp(words[0], "exit") == 0) {
@@ -383,6 +387,9 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
 
     // external commands
     else {
+        int flagPipe[2];
+        pipe(flagPipe);
+
         pid_t pid = fork();
         int output;
 
@@ -390,11 +397,15 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
             eMessage();
         }
         else if (pid == 0) {
-            if (outputFile[0] != NULL && *flag == 0) {
+            close(flagPipe[0]);
+
+            if (outputFile[0] != NULL && *f == 0) {
 
                 output = open(outputFile[0], O_WRONLY, 0644);
 
-                *flag = 1;
+                *f = 1;
+                write(flagPipe[1], f, sizeof(int));
+                close(flagPipe[1]);
 
                 if (output == -1) {
                     eMessage();
@@ -412,7 +423,7 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
                 _exit(0);
             }
 
-            else if (outputFile[0] != NULL && *flag == 1) {
+            else if (outputFile[0] != NULL && *f == 1) {
                 printf("test\n");
             }
 
@@ -425,6 +436,15 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
         else {
             wait(NULL);
             clearWords(words);
+
+            int flags = fcntl(flagPipe[0], F_GETFL, 0);
+            fcntl(flagPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+            // if information available in parent pipe (ie cd was executed)
+            // update the current directory of this process
+            ssize_t info = read(flagPipe[0], f, sizeof(int));
+            close(flagPipe[0]);
+            
         }
 
     }
