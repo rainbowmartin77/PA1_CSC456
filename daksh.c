@@ -177,12 +177,16 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
             // one command has redirect
             if (strchr(multipleCommands[proc], '>')) {
                 // if command has redirect
-                bool one = checkRedirect(multipleCommands[proc]);
-
+                bool one = checkRedirect(input);
+                
                 if (one == true) {
                     redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                    exCommand(words, presentDirectory, outputFile, flag);
+                    bool oneFile = checkFile(outputFile);
+                    if (oneFile == true){
+                        exCommand(words, presentDirectory, outputFile, flag);
+                    }
                     clearWords(words);
+                    clearWords(outputFile);
                 }
             }
             else {

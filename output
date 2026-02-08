@@ -1,12 +1,1 @@
-total 84
--rwxrwxr-x 1 dsu dsu 16048 Feb  1 14:21 a.out
--rwxrwxr-x 1 dsu dsu 21600 Feb  7 22:32 daksh
--rw-rw-r-- 1 dsu dsu 14782 Feb  7 22:32 daksh.c
--rw-r--r-- 1 dsu dsu    37 Feb  7 19:46  ls > ls > ls
--rw-r--r-- 1 dsu dsu    71 Feb  7 21:34 out
--rw-r--r-- 1 dsu dsu    37 Feb  7 22:31 outpu
--rw-r--r-- 1 dsu dsu     0 Feb  7 22:32 output
--rw-rw-r-- 1 dsu dsu    49 Feb  7 19:06 output.txt
--rw-r--r-- 1 dsu dsu    77 Feb  7 19:48 test
--rw-r--r-- 1 dsu dsu     5 Feb  7 17:27 test1
--rw-r--r-- 1 dsu dsu    53 Feb  7 19:22 tet
+hello
