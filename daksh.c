@@ -412,12 +412,14 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
             eMessage();
         }
         else if (pid == 0) {
-            close(flagPipe[0]);
 
-            if (outputFile[0] != NULL && *f == 0) {
+            if (outputFile[0] != NULL) {
 
                 output = open(outputFile[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
+                outputFile[0] = NULL;
+
+                close(flagPipe[0]);
                 *f = 1;
                 write(flagPipe[1], f, sizeof(int));
                 close(flagPipe[1]);
@@ -451,6 +453,8 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
         else {
             wait(NULL);
             clearWords(words);
+
+            close(flagPipe[1]);
 
             int flags = fcntl(flagPipe[0], F_GETFL, 0);
             fcntl(flagPipe[0], F_SETFL, flags | O_NONBLOCK);
