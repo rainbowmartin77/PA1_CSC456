@@ -23,8 +23,6 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
 void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag);
 
-bool checkRedirect (char* input);
-
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
@@ -69,12 +67,13 @@ int main(int argc, char* argv[]) {
                     parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
                 }
                 else {
-                    if(strchr(input, '>')){
+                    // if command has redirect
+                    if (strchr(input, '>')) {
                         redirectIncluded(words, outputFile, input, presentDirectory, flag);
                         exCommand(words, presentDirectory, outputFile, flag);
-                        printf("%d\n", *flag);
                         clearWords(words);
                     }
+                    
                     
                     else {
                         breakString(words, input, length);
@@ -105,15 +104,13 @@ int main(int argc, char* argv[]) {
                 parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
             }
             else {
+                // if command has redirect
                 if (strchr(input, '>')) {
-                    bool good = checkRedirect(input);
-
-                    if (good == true) {
-                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                        exCommand(words, presentDirectory, outputFile, flag);
-                        clearWords(words);
-                    }
+                    redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
                 }
+
                 else {
                     breakString(words, input, length);
                     exCommand(words, presentDirectory, outputFile, flag);
@@ -166,27 +163,31 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
             // one command has redirect
             if (strchr(multipleCommands[proc], '>')) {
-                redirectIncluded(words, outputFile, multipleCommands[proc], presentDirectory, flag);
-            }
-
-            breakString(words, multipleCommands[proc], length);
-
-            // if a child process is executing cd
-            if (strcmp(words[0], "cd") == 0) {
+                // if command has redirect
+                redirectIncluded(words, outputFile, input, presentDirectory, flag);
                 exCommand(words, presentDirectory, outputFile, flag);
                 clearWords(words);
-                // write to child pipe
-                write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
-                close (childPipe[1]);
-                // write to the parent process
-                write(parentPipe[1], presentDirectory, strlen(presentDirectory) + 1);
-                close(parentPipe[1]);
             }
+            else {
+                breakString(words, multipleCommands[proc], length);
 
-            // execute command normally if not cd
-            if (strcmp(words[0], "cd") != 0) {
-                exCommand(words, presentDirectory, outputFile, flag);
-                clearWords(words);
+                // if a child process is executing cd
+                if (strcmp(words[0], "cd") == 0) {
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                    // write to child pipe
+                    write(childPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                    close (childPipe[1]);
+                    // write to the parent process
+                    write(parentPipe[1], presentDirectory, strlen(presentDirectory) + 1);
+                    close(parentPipe[1]);
+                }
+
+                // execute command normally if not cd
+                if (strcmp(words[0], "cd") != 0) {
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                }
             }
 
             _exit(0);
@@ -258,24 +259,6 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
         }
 
     }
-}
-
-bool checkRedirect (char* input) {
-    char* redir;
-    char del[] = {">"};
-    bool good = true;
-    // if command has redirect
-    // separate command from output file
-    int i = 0;
-    while ((redir = strsep(&input, del))!= 0) {
-        i++;
-    }
-    if (i > 2) {
-        eMessage();
-        good = false;
-    }
-
-    return good;
 }
 
 void breakString(char** words, char* input, ssize_t length) {
@@ -376,7 +359,6 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
     // path command
     else if (strcmp(words[0], "path") == 0) {
         char* paths[20];
-        
 
         // count arguments to path
         int c = 0;
@@ -386,36 +368,36 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
             }
         }
 
-        char* presentPath = "";
-        /**clearing PATH
+        // clearing PATH
         if(c == 1 && strcmp(words[1], "clear") == 0) {
             // clear the path
             setenv("PATH", "", 1);
-        }*/
+        }
 
         // adding to PATH
-        for (int i = 1; words[i] != NULL; i++) {
-            char path[50];
-            strcpy(path, words[i]);
-            char* newPath;
+        else {
+            for (int i = 1; words[i] != NULL; i++) {
+                char* presentPath = getenv("PATH");
+                char path[50];
+                strcpy(path, words[i]);
+                char* newPath;
             
-            
-            if (strcmp(presentPath, "") == 0){
-                size_t len = strlen(path) + 1;
-                newPath = malloc(len);
-                snprintf(newPath, len, "%s", path);
+                if (strcmp(presentPath, "") != 0) {
+                    size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
+                    newPath = malloc(len);
+                    snprintf(newPath, len, "%s:%s", presentPath, path);
+                    setenv("PATH", newPath, 1);
+                    free(newPath);
+                }
+                else {
+                    size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
+                    newPath = malloc(len);
+                    snprintf(newPath, len, "%s", path);
+                    setenv("PATH", newPath, 1);
+                    free(newPath);
+                }
             }
-            else {
-                size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
-                newPath = malloc(len);
-                snprintf(newPath, len, "%s:%s", presentPath, path);
-            }
-            
-            presentPath = newPath;
-            
         }
-        setenv("PATH", presentPath, 1);
-        char* pathValue = getenv("PATH");
     }
 
     // external commands
@@ -456,9 +438,9 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
                 _exit(0);
             }
 
-            else if (outputFile[0] != NULL && *f == 1) {
+            /*else if (outputFile[0] != NULL && *f == 1) {
                 printf("test\n");
-            }
+            }*/
 
             else {
                 execvp(words[0], words);
