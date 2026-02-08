@@ -25,6 +25,8 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
 
 bool checkRedirect(char* input);
 
+bool checkFile(char **outputFile);
+
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
@@ -108,15 +110,25 @@ int main(int argc, char* argv[]) {
             if (strchr(input, '&')) {
                 parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
             }
-            else {
+            else if (strchr(input, '>')) {
+                char* redirString = input;
+                //char*
+                //printf("original input: %s\n", input);
                 // if command has redirect
-                if (strchr(input, '>')) {
-                    bool one = checkRedirect(input);
-                    if (one == true) {
-                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                
+                    
+                //printf("> input %s\n", input);
+                bool one = checkRedirect(input);
+                //printf("> input %s\n", input);
+                printf("bool %d\n", one);
+                if (one == true) {
+                    redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                    bool oneFile = checkFile(outputFile);
+                    if (oneFile == true){
                         exCommand(words, presentDirectory, outputFile, flag);
-                        clearWords(words);
                     }
+                    
+                    clearWords(words);
                 }
 
                 else {
@@ -274,20 +286,39 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
 }
 
 bool checkRedirect(char* input) {
-    char* redir;
+    char* redir = input;
     bool oneRedir = true;
-    char del[] = {">"}; 
+    char del = '>'; 
 
-    int i = 0;
-    while((redir = strsep(&input, del)) != 0) {
-        i++;
+    int count = 0;
+    for (int i = 0; i < strlen(input); i++) {
+        if (input[i] == del){
+            count++;
+        }
     }
-    if (i > 2) {
+    
+    if ( count > 1) {
         eMessage();
         oneRedir = false;
     }
 
     return oneRedir;
+}
+
+bool checkFile(char **outputFile) {
+    bool oneFile = true;
+
+    int i = 0;
+    while(outputFile[i] != NULL) {
+        i++;
+    }
+
+    if(i > 2) {
+        oneFile = false;
+        eMessage();
+    }
+
+    return oneFile;
 }
 
 void breakString(char** words, char* input, ssize_t length) {
@@ -305,7 +336,7 @@ void breakString(char** words, char* input, ssize_t length) {
         }
     }
     // make sure list of words in null terminated
-    words[i+1] = NULL;
+    words[i] = NULL;
     
     return;
 }
