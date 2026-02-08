@@ -488,6 +488,11 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
                     _exit(0);
                 }
 
+                if (dup2(output, STDERR_FILENO) == -1){
+                    eMessage();
+                    _exit(0);
+                }
+
                 if (dup2(output, STDOUT_FILENO) == -1) {
                     eMessage();
                     _exit(0);
