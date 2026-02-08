@@ -1,5 +1,3 @@
-ls > ls > ls
-ls > ls > ls & pwd
-pwd & ls>>
-pwd & ls>> & pwd
-pwd & pwd & ls>>
+ls -l > output & pwd & pwd
+pwd & echo test > test1 & pwd
+pwd & pwd & pwd > test2
