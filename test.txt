@@ -1,4 +1,0 @@
-echo "test this" > output.txt test
-pwd
-ls
-pwd er > output.txt & echo "testing" > testoutput & pwd
