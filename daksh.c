@@ -472,8 +472,10 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
 
             if (outputFile[0] != NULL) {
                 // truncate file to 0 bytes to prepare for overwriting
-                if(truncate(outputFile[0], 0) == -1) {
-                    eMessage();
+                if(access(outputFile[0], F_OK) == 0) {
+                    if(truncate(outputFile[0], 0) == -1) {
+                        eMessage();
+                    }
                 }
 
                 output = open(outputFile[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
