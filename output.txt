@@ -1,1 +1,2 @@
-"test"
+pwd: ignoring non-option arguments
+/home/dsu/Desktop/CSC_456/PA1_CSC456
