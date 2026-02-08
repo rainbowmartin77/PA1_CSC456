@@ -424,7 +424,7 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
 
     // path command
     else if (strcmp(words[0], "path") == 0) {
-        char* paths[20];
+        
 
         // count arguments to path
         int c = 0;
@@ -434,36 +434,27 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
             }
         }
 
-        // clearing PATH
-        if(c == 1 && strcmp(words[1], "clear") == 0) {
-            // clear the path
-            setenv("PATH", "", 1);
-        }
+        char* presentPath = "";
 
-        // adding to PATH
-        else {
-            for (int i = 1; words[i] != NULL; i++) {
-                char* presentPath = getenv("PATH");
-                char path[50];
-                strcpy(path, words[i]);
-                char* newPath;
-            
-                if (strcmp(presentPath, "") != 0) {
-                    size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
-                    newPath = malloc(len);
-                    snprintf(newPath, len, "%s:%s", presentPath, path);
-                    setenv("PATH", newPath, 1);
-                    free(newPath);
-                }
-                else {
-                    size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
-                    newPath = malloc(len);
-                    snprintf(newPath, len, "%s", path);
-                    setenv("PATH", newPath, 1);
-                    free(newPath);
-                }
+        // updating path
+        for (int i = 1; words[i] != NULL; i++) {
+            char path[50];
+            strcpy(path, words[i]);
+            char* newPath;
+        
+            if (strcmp(presentPath, "") == 0) {
+                size_t len = strlen(path) + 1;
+                newPath = malloc(len);
+                snprintf(newPath, len, "%s", path);
             }
+            else {
+                size_t len = strlen(presentPath) + 1 + strlen(path) + 1;
+                newPath = malloc(len);
+                snprintf(newPath, len, "%s:%s",presentPath, path);
+            }
+            presentPath = newPath;
         }
+        setenv("PATH", presentPath, 1);
     }
 
     // external commands
@@ -480,6 +471,10 @@ void exCommand(char* words[],  char presentDirectory[], char** outputFile, int* 
         else if (pid == 0) {
 
             if (outputFile[0] != NULL) {
+                // truncate file to 0 bytes to prepare for overwriting
+                if(truncate(outputFile[0], 0) == -1) {
+                    eMessage();
+                }
 
                 output = open(outputFile[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
