@@ -23,6 +23,8 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
 
 void redirectIncluded(char** words, char** outputFile, char* input, char presentDirectory[], int* flag);
 
+bool checkRedirect(char* input);
+
 int main(int argc, char* argv[]) {
     // set initial path to /bin
     setenv("PATH", "/bin", 1);
@@ -69,9 +71,12 @@ int main(int argc, char* argv[]) {
                 else {
                     // if command has redirect
                     if (strchr(input, '>')) {
-                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                        exCommand(words, presentDirectory, outputFile, flag);
-                        clearWords(words);
+                        bool one = checkRedirect(input);
+                        if (one == true) {
+                            redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                            exCommand(words, presentDirectory, outputFile, flag);
+                            clearWords(words);
+                        }
                     }
                     
                     
@@ -106,9 +111,12 @@ int main(int argc, char* argv[]) {
             else {
                 // if command has redirect
                 if (strchr(input, '>')) {
-                    redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                    exCommand(words, presentDirectory, outputFile, flag);
-                    clearWords(words);
+                    bool one = checkRedirect(input);
+                    if (one == true) {
+                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                        exCommand(words, presentDirectory, outputFile, flag);
+                        clearWords(words);
+                    }
                 }
 
                 else {
@@ -164,9 +172,13 @@ void parallelCommands(char** multipleCommands, char* words[], char* input, ssize
             // one command has redirect
             if (strchr(multipleCommands[proc], '>')) {
                 // if command has redirect
-                redirectIncluded(words, outputFile, input, presentDirectory, flag);
-                exCommand(words, presentDirectory, outputFile, flag);
-                clearWords(words);
+                bool one = checkRedirect(multipleCommands[proc]);
+
+                if (one == true) {
+                    redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                }
             }
             else {
                 breakString(words, multipleCommands[proc], length);
@@ -259,6 +271,23 @@ void redirectIncluded(char** words, char** outputFile, char* input, char present
         }
 
     }
+}
+
+bool checkRedirect(char* input) {
+    char* redir;
+    bool oneRedir = true;
+    char del[] = {">"}; 
+
+    int i = 0;
+    while((redir = strsep(&input, del)) != 0) {
+        i++;
+    }
+    if (i > 2) {
+        eMessage();
+        oneRedir = false;
+    }
+
+    return oneRedir;
 }
 
 void breakString(char** words, char* input, ssize_t length) {
