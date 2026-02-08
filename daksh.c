@@ -70,28 +70,30 @@ int main(int argc, char* argv[]) {
                 if (strchr(input, '&')) {
                     parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
                 }
-                else {
+                else if (strchr(input, '>')){
                     // if command has redirect
-                    if (strchr(input, '>')) {
-                        bool one = checkRedirect(input);
-                        if (one == true) {
-                            redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                    bool one = checkRedirect(input);
+                
+                    if (one == true) {
+                        redirectIncluded(words, outputFile, input, presentDirectory, flag);
+                        bool oneFile = checkFile(outputFile);
+                        if (oneFile == true){
                             exCommand(words, presentDirectory, outputFile, flag);
-                            clearWords(words);
                         }
-                    }
-                    
-                    
-                    else {
-                        breakString(words, input, length);
-                        if (strcmp(words[0], "exit") == 0) {
-                            // leave loop to close file if exit is read
-                            break;
-                        }
-                        exCommand(words, presentDirectory, outputFile, flag);
                         clearWords(words);
+                        clearWords(outputFile);
                     }
-                }  
+                } 
+                    
+                else {
+                    breakString(words, input, length);
+                    if (strcmp(words[0], "exit") == 0) {
+                        // leave loop to close file if exit is read
+                        break;
+                    }
+                    exCommand(words, presentDirectory, outputFile, flag);
+                    clearWords(words);
+                }
             }
             fclose(inputFile);
             exit(0);
