@@ -111,31 +111,24 @@ int main(int argc, char* argv[]) {
                 parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
             }
             else if (strchr(input, '>')) {
-                char* redirString = input;
-                //char*
-                //printf("original input: %s\n", input);
-                // if command has redirect
                 
-                    
-                //printf("> input %s\n", input);
+                
                 bool one = checkRedirect(input);
-                //printf("> input %s\n", input);
-                printf("bool %d\n", one);
+                
                 if (one == true) {
                     redirectIncluded(words, outputFile, input, presentDirectory, flag);
                     bool oneFile = checkFile(outputFile);
                     if (oneFile == true){
                         exCommand(words, presentDirectory, outputFile, flag);
                     }
-                    
                     clearWords(words);
+                    clearWords(outputFile);
                 }
-
-                else {
-                    breakString(words, input, length);
-                    exCommand(words, presentDirectory, outputFile, flag);
-                    clearWords(words);
-                }
+            }
+            else{
+                breakString(words, input, length);
+                exCommand(words, presentDirectory, outputFile, flag);
+                clearWords(words);
             }
         }
 
@@ -313,7 +306,7 @@ bool checkFile(char **outputFile) {
         i++;
     }
 
-    if(i > 2) {
+    if(i > 1) {
         oneFile = false;
         eMessage();
     }
