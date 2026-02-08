@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
 
+            // read until eof
             while ((length = getline(&input, &capacity, inputFile))!= -1) {
 
                 if (strchr(input, '&')) {
@@ -108,6 +109,12 @@ int main(int argc, char* argv[]) {
 
             // read input
             length = getline(&input, &capacity, stdin);
+
+            // eof detected
+            if (feof(stdin)) {
+                printf("\n");
+                exit(0);
+            }
 
             if (strchr(input, '&')) {
                 parallelCommands(multipleCommands, words, input, length, presentDirectory, outputFile, flag);
